@@ -1,6 +1,8 @@
 <?php
 namespace Metabase;
 use Lcobucci\JWT\Token;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
 
 /**
  * Convenience class to embed Metabase dashboards and questions
@@ -26,7 +28,7 @@ class Embed
     public function __construct($url, $key)
     {
         $this->url = $url;
-        $this->key = $key;
+        $this->key = InMemory::plainText($key);
     }
 
     /**
@@ -74,7 +76,9 @@ class Embed
         }
         $jwt->sign(new \Lcobucci\JWT\Signer\Hmac\Sha256(), $this->key);
 
-        return $jwt->getToken();
+        $signer = new Sha256();
+
+        return $jwt->getToken($signer, $this->key);
     }
     
     protected function url($resource, $id, $params)
